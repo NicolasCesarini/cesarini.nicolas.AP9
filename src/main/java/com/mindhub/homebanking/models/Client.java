@@ -4,7 +4,11 @@ import org.hibernate.annotations.GenericGenerator;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import java.util.HashSet;
+import java.util.Set;
 
 
 @Entity
@@ -16,8 +20,10 @@ public class Client {
     private long id;
     private String firstName;
     private String lastName;
-
     private String email;
+
+    @OneToMany(mappedBy="owner", fetch= FetchType.EAGER)
+    Set<Account> accounts = new HashSet<>();
 
     public Client() {
     }
@@ -54,6 +60,19 @@ public class Client {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String toString() {
+        return firstName + " " + lastName;
+    }
+
+    public Set<Account> getAccounts() {
+        return accounts;
+    }
+
+    public void addAccount(Account account) {
+        account.setOwner(this);
+        accounts.add(account);
     }
 }
 

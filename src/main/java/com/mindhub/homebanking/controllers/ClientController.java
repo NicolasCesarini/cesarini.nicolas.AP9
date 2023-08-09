@@ -33,7 +33,7 @@ public class ClientController {
         return convertedList;
     }
 
-    @GetMapping("clients/{id}")
+    @GetMapping("/clients/{id}")
     public ClientDTO getClientById(@PathVariable Long id){
         Optional<Client> clientOptional = clientRepository.findById(id);
         return new ClientDTO(clientOptional.get());

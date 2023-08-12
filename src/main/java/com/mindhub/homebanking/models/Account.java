@@ -20,7 +20,7 @@ public class Account {
     private double balance;
 
     @OneToMany(mappedBy="usedAccount", fetch= FetchType.EAGER)
-    Set<Transaction> transactions = new HashSet<>();
+    private Set<Transaction> transactions = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="owner_id")

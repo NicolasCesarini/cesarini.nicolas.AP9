@@ -20,6 +20,8 @@ public class ClientDTO {
 
     private Set<ClientLoanDTO> loans;
 
+    private Set<CardDTO> cards;
+
     public ClientDTO(Client client) {
         this.id = client.getId();
         this.firstName = client.getFirstName();
@@ -33,6 +35,11 @@ public class ClientDTO {
         this.loans = client.getClientLoans()
                 .stream()
                 .map(currentLoan -> new ClientLoanDTO(currentLoan))
+                .collect(toSet());
+
+        this.cards = client.getCards()
+                .stream()
+                .map(card -> new CardDTO(card))
                 .collect(toSet());
     }
 
@@ -58,5 +65,9 @@ public class ClientDTO {
 
     public Set<ClientLoanDTO> getLoans() {
         return loans;
+    }
+
+    public Set<CardDTO> getCards() {
+        return cards;
     }
 }

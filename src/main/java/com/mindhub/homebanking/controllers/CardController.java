@@ -1,6 +1,8 @@
 package com.mindhub.homebanking.controllers;
 
 
+import com.mindhub.homebanking.dtos.AccountDTO;
+import com.mindhub.homebanking.dtos.CardDTO;
 import com.mindhub.homebanking.models.Card;
 import com.mindhub.homebanking.models.CardColor;
 import com.mindhub.homebanking.models.CardType;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 import static java.util.stream.Collectors.toList;
@@ -54,6 +57,14 @@ public class CardController {
         cardRepository.save(card);
         return new ResponseEntity<>("Tarjeta creada", HttpStatus.CREATED);
 
+    }
+
+    @RequestMapping("/clients/current/cards")
+    public List<CardDTO> getCurrentCards(Authentication authentication) {
+        Client client = clientRepository.findByEmail(authentication.getName());
+        List<CardDTO> currentClientCards = client.getCards().stream()
+                .map(card -> new CardDTO(card)).collect(toList());
+        return currentClientCards;
     }
 
     public int getRandomNumber(int min, int max) {

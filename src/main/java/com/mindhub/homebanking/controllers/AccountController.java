@@ -1,6 +1,7 @@
 package com.mindhub.homebanking.controllers;
 
 import com.mindhub.homebanking.dtos.AccountDTO;
+import com.mindhub.homebanking.dtos.ClientDTO;
 import com.mindhub.homebanking.models.Account;
 import com.mindhub.homebanking.models.Client;
 import com.mindhub.homebanking.repositories.AccountRepository;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static java.util.stream.Collectors.toList;
 
@@ -58,6 +60,14 @@ public class AccountController {
         accountRepository.save(account);
         return new ResponseEntity<>("Cuenta creada", HttpStatus.CREATED);
 
+    }
+
+    @RequestMapping("/clients/current/accounts")
+    public List<AccountDTO> getCurrentAccounts(Authentication authentication) {
+        Client client = clientRepository.findByEmail(authentication.getName());
+        List<AccountDTO> currentClientAccounts = client.getAccounts().stream()
+                .map(account -> new AccountDTO(account)).collect(toList());
+        return currentClientAccounts;
     }
 
     public int getRandomNumber(int min, int max) {

@@ -27,8 +27,11 @@ public class WebAuthorization{
                 .antMatchers("/api/clients/current").hasAuthority("CLIENT")
                 .antMatchers("/api/accounts/**").hasAuthority("CLIENT")
                 .antMatchers("/web/**").hasAnyAuthority("CLIENT","ADMIN")
+                .antMatchers(HttpMethod.POST, "/api/clients/current/accounts").hasAuthority("CLIENT")
+                .antMatchers(HttpMethod.POST, "/api/clients/current/cards").hasAuthority("CLIENT")
                 .antMatchers(HttpMethod.POST, "/api/logout").hasAnyAuthority("CLIENT","ADMIN")
-                .antMatchers("/**").hasAuthority("ADMIN");
+                .antMatchers("/**").hasAuthority("ADMIN")
+                .anyRequest().denyAll();
 
         http.formLogin()
                 .usernameParameter("email")

@@ -1,5 +1,7 @@
 package com.mindhub.homebanking;
 
+import com.mindhub.homebanking.controllers.AccountController;
+import com.mindhub.homebanking.controllers.CardController;
 import com.mindhub.homebanking.dtos.ClientDTO;
 import com.mindhub.homebanking.models.*;
 import com.mindhub.homebanking.repositories.*;
@@ -9,8 +11,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -23,6 +23,12 @@ public class HomebankingApplication {
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+
+	@Autowired
+	private AccountController accountController;
+
+	@Autowired
+	private CardController cardController;
 
 	@Bean
 	public CommandLineRunner initData(ClientRepository clientRepository, AccountRepository accountRepository,
@@ -37,13 +43,13 @@ public class HomebankingApplication {
 			clientRepository.save(client2);
 			clientRepository.save(client3);
 
-			LocalDate today =  LocalDate.now();
-			LocalDate tomorrow = today.plusDays(1);
+			LocalDateTime today =  LocalDateTime.now();
+			LocalDateTime tomorrow = today.plusDays(1);
 
-			Account account1 = new Account("VIN001", today, 5000);
-			Account account2 = new Account("VIN002", tomorrow, 7500);
-			Account account3 = new Account("VIN003", today, 10000);
-			Account account4 = new Account("VIN004", tomorrow, 15000);
+			Account account1 = new Account(accountController.getAccountNumber(), today, 5000);
+			Account account2 = new Account(accountController.getAccountNumber(), tomorrow, 7500);
+			Account account3 = new Account(accountController.getAccountNumber(), today, 10000);
+			Account account4 = new Account(accountController.getAccountNumber(), tomorrow, 15000);
 
 			client1.addAccount(account1);
 			client1.addAccount(account2);
@@ -110,13 +116,13 @@ public class HomebankingApplication {
 			clientLoanRepository.save(clientLoan4);
 
 			Card card1 = new Card(client1.getFirstName() + " " + client1.getLastName(), CardType.DEBIT, CardColor.GOLD,
-					"4123-4567-8912-3456", 123, LocalDateTime.now(),
+					cardController.getCardNumber(), cardController.getCardCvv(), LocalDateTime.now(),
 					LocalDateTime.now().plusYears(5));
 			Card card2 = new Card(client1.getFirstName() + " " + client1.getLastName(), CardType.CREDIT, CardColor.TITANIUM,
-					"4789-4561-2378-9456", 789, LocalDateTime.now(),
+					cardController.getCardNumber(), cardController.getCardCvv(), LocalDateTime.now(),
 					LocalDateTime.now().plusYears(5));
 			Card card3 = new Card(client2.getFirstName() + " " + client2.getLastName(), CardType.CREDIT, CardColor.SILVER,
-					"4789-4561-2378-9456", 789, LocalDateTime.now(),
+					cardController.getCardNumber(), cardController.getCardCvv(), LocalDateTime.now(),
 					LocalDateTime.now().plusYears(5));
 			client1.addCard(card1);
 			client1.addCard(card2);

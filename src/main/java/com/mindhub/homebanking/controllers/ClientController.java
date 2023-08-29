@@ -1,7 +1,9 @@
 package com.mindhub.homebanking.controllers;
 
 import com.mindhub.homebanking.dtos.ClientDTO;
+import com.mindhub.homebanking.models.Account;
 import com.mindhub.homebanking.models.Client;
+import com.mindhub.homebanking.repositories.AccountRepository;
 import com.mindhub.homebanking.repositories.ClientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,8 +12,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 import static java.util.stream.Collectors.toList;
 
@@ -23,7 +28,13 @@ public class ClientController {
     private ClientRepository clientRepository;
 
     @Autowired
+    private AccountRepository accountRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private AccountController accountController;
 
     @GetMapping("/clients")
     public List<ClientDTO> getClients() {
@@ -48,7 +59,7 @@ public class ClientController {
             @RequestParam String firstName, @RequestParam String lastName,
             @RequestParam String email, @RequestParam String password) {
 
-        if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || password.isEmpty()) {
+        if (firstName.isBlank() || lastName.isBlank() || email.isBlank() || password.isBlank()) {
             return new ResponseEntity<>("Missing data", HttpStatus.FORBIDDEN);
         }
 
@@ -56,12 +67,18 @@ public class ClientController {
             return new ResponseEntity<>("Name already in use", HttpStatus.FORBIDDEN);
         }
 
-        clientRepository.save(new Client(firstName, lastName, email, passwordEncoder.encode(password)));
+        Client client = new Client(firstName, lastName, email, passwordEncoder.encode(password));
+        clientRepository.save(client);
+        Account account = new Account(accountController.getAccountNumber(), LocalDateTime.now(), 0);
+        client.addAccount(account);
+        accountRepository.save(account);
         return new ResponseEntity<>(HttpStatus.CREATED);
+
     }
 
     @RequestMapping("/clients/current")
     public ClientDTO getCurrentClient(Authentication authentication) {
         return new ClientDTO(clientRepository.findByEmail(authentication.getName()));
     }
+
 }

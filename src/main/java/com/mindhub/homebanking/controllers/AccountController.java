@@ -41,10 +41,29 @@ public class AccountController {
         return convertedListAccounts;
     }
 
+
+    /*
     @GetMapping("/accounts/{id}")
-    public AccountDTO getAccountById(@PathVariable Long id){
-        Optional<Account> accountOptional = accountRepository.findById(id);
-        return new AccountDTO(accountOptional.get());
+    public AccountDTO getAccountById(@PathVariable Long id, Authentication authentication){
+        Client client = clientRepository.findByEmail(authentication.getName());
+        return new AccountDTO(accountRepository.findByIdAndOwner(id, client));
+     */
+    @GetMapping("/accounts/{id}")
+    public ResponseEntity<Object> getAccountById(@PathVariable Long id, Authentication authentication){
+        Client client = clientRepository.findByEmail(authentication.getName());
+        Account account = accountRepository.findByIdAndOwner(id, client);
+        if (account==null){
+            return new ResponseEntity<>("La cuenta no pertenece al cliente", HttpStatus.FORBIDDEN);
+        }
+        return new ResponseEntity<>(new AccountDTO(account), HttpStatus.ACCEPTED);
+    }
+
+    @RequestMapping("/clients/current/accounts")
+    public List<AccountDTO> getCurrentAccounts(Authentication authentication) {
+        Client client = clientRepository.findByEmail(authentication.getName());
+        List<AccountDTO> currentClientAccounts = client.getAccounts().stream()
+                .map(account -> new AccountDTO(account)).collect(toList());
+        return currentClientAccounts;
     }
 
     @PostMapping("/clients/current/accounts")
@@ -62,13 +81,7 @@ public class AccountController {
 
     }
 
-    @RequestMapping("/clients/current/accounts")
-    public List<AccountDTO> getCurrentAccounts(Authentication authentication) {
-        Client client = clientRepository.findByEmail(authentication.getName());
-        List<AccountDTO> currentClientAccounts = client.getAccounts().stream()
-                .map(account -> new AccountDTO(account)).collect(toList());
-        return currentClientAccounts;
-    }
+
 
     public int getRandomNumber(int min, int max) {
         return (int) ((Math.random() * (max - min)) + min);

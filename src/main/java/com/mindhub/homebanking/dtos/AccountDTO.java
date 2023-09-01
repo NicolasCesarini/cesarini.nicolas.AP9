@@ -38,6 +38,10 @@ public class AccountDTO {
         return creationDate;
     }
 
+    public LocalDateTime getCreationDate() {
+        return creationDate;
+    }
+
     public double getBalance() {
         return balance;
     }

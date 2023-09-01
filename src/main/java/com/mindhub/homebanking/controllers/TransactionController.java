@@ -42,8 +42,8 @@ public class TransactionController {
     @PostMapping("/transactions")
     public ResponseEntity<Object> makeATransaction(
 
-            @RequestParam String description, @RequestParam String fromAccountNumber,
-            @RequestParam String toAccountNumber, @RequestParam double amount,
+            @RequestParam String fromAccountNumber, @RequestParam String toAccountNumber,
+            @RequestParam double amount, @RequestParam String description,
             Authentication authentication) {
 
         if (description.isBlank()) {
@@ -63,7 +63,7 @@ public class TransactionController {
         }
 
         Client debitClient = clientRepository.findByEmail(authentication.getName());
-        Client creditClient = accountRepository.findByNumber(toAccountNumber).getOwner();
+        //Client creditClient = accountRepository.findByNumber(toAccountNumber).getOwner();
 
         if (accountRepository.findByNumber(fromAccountNumber) == null){
             return new ResponseEntity<>("La cuenta de origen ingresada no exite", HttpStatus.FORBIDDEN);
@@ -108,13 +108,5 @@ public class TransactionController {
 
         return new ResponseEntity<>("La transacción se realizó con exito", HttpStatus.ACCEPTED);
     }
-    /*public double makeTransaction(Account debitAccount, Account creditAccount, double amount) {
-        double debitAccountBalance = debitAccount.getBalance();
-        double creditAccountBalance = creditAccount.getBalance();
-        debitAccountBalance - amount
-                creditAccountBalance + amount
-    }*/
-
-
 
 }

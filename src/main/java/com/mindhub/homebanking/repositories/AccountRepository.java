@@ -10,7 +10,11 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     /*Account findByNumber(String number);*/
     boolean existsByNumber(String accountNumber);
 
+    boolean existsByNumberAndOwner (String number, Client owner);
+
     Account findByNumber (String number);
 
     Account findByNumberAndOwner (String number, Client owner);
+
+    Account findByIdAndOwner (Long Id, Client owner);
 }

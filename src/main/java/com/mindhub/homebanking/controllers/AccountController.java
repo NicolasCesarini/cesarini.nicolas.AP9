@@ -4,8 +4,8 @@ import com.mindhub.homebanking.dtos.AccountDTO;
 import com.mindhub.homebanking.dtos.ClientDTO;
 import com.mindhub.homebanking.models.Account;
 import com.mindhub.homebanking.models.Client;
-import com.mindhub.homebanking.repositories.AccountRepository;
-import com.mindhub.homebanking.repositories.ClientRepository;
+import com.mindhub.homebanking.services.AccountService;
+import com.mindhub.homebanking.services.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,20 +25,14 @@ import static java.util.stream.Collectors.toList;
 public class AccountController {
 
     @Autowired
-    private AccountRepository accountRepository;
+    private AccountService accountService;
 
     @Autowired
-    private ClientRepository clientRepository;
+    private ClientService clientService;
 
     @GetMapping("/accounts")
     public List<AccountDTO> GetAccounts(){
-        List<Account> allAccounts = accountRepository.findAll();
-
-        List<AccountDTO> convertedListAccounts = allAccounts.stream()
-                .map(currentAccount -> new AccountDTO(currentAccount))
-                .collect(toList());
-
-        return convertedListAccounts;
+        return accountService.GetAccountsDTO();
     }
 
 
@@ -50,8 +44,8 @@ public class AccountController {
      */
     @GetMapping("/accounts/{id}")
     public ResponseEntity<Object> getAccountById(@PathVariable Long id, Authentication authentication){
-        Client client = clientRepository.findByEmail(authentication.getName());
-        Account account = accountRepository.findByIdAndOwner(id, client);
+        Client client = clientService.findByEmail(authentication.getName());
+        Account account = accountService.findByIdAndOwner(id, client);
         if (account==null){
             return new ResponseEntity<>("La cuenta no pertenece al cliente", HttpStatus.FORBIDDEN);
         }
@@ -60,7 +54,7 @@ public class AccountController {
 
     @RequestMapping("/clients/current/accounts")
     public List<AccountDTO> getCurrentAccounts(Authentication authentication) {
-        Client client = clientRepository.findByEmail(authentication.getName());
+        Client client = clientService.findByEmail(authentication.getName());
         List<AccountDTO> currentClientAccounts = client.getAccounts().stream()
                 .map(account -> new AccountDTO(account)).collect(toList());
         return currentClientAccounts;
@@ -68,7 +62,7 @@ public class AccountController {
 
     @PostMapping("/clients/current/accounts")
     public ResponseEntity<Object> createAccount(Authentication authentication) {
-        Client client = clientRepository.findByEmail(authentication.getName());
+        Client client = clientService.findByEmail(authentication.getName());
 
         if (client.getAccounts().size()>=3){
             return new ResponseEntity<>("Ya tienes el máximo de cuentas permitidas", HttpStatus.FORBIDDEN);
@@ -76,7 +70,7 @@ public class AccountController {
 
         Account account = new Account(getAccountNumber(), LocalDateTime.now(), 0);
         client.addAccount(account);
-        accountRepository.save(account);
+        accountService.save(account);
         return new ResponseEntity<>("Cuenta creada", HttpStatus.CREATED);
 
     }
@@ -91,7 +85,7 @@ public class AccountController {
         String numeroCuenta;
         do {
             numeroCuenta= "VIN-" + String.format("%08d", getRandomNumber(1, 99999999));
-        } while (accountRepository.existsByNumber(numeroCuenta));
+        } while (accountService.existsByNumber(numeroCuenta));
         return numeroCuenta;
     }
 

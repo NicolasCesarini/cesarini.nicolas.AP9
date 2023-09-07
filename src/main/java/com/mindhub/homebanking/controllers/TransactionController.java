@@ -4,9 +4,9 @@ import com.mindhub.homebanking.models.Account;
 import com.mindhub.homebanking.models.Client;
 import com.mindhub.homebanking.models.Transaction;
 import com.mindhub.homebanking.models.TransactionType;
-import com.mindhub.homebanking.repositories.AccountRepository;
-import com.mindhub.homebanking.repositories.ClientRepository;
-import com.mindhub.homebanking.repositories.TransactionRepository;
+import com.mindhub.homebanking.services.AccountService;
+import com.mindhub.homebanking.services.ClientService;
+import com.mindhub.homebanking.services.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,13 +30,13 @@ public class TransactionController {
     private CardController cardController;
 
     @Autowired
-    private ClientRepository clientRepository;
+    private ClientService clientService;
 
     @Autowired
-    private TransactionRepository transactionRepository;
+    private TransactionService transactionService;
 
     @Autowired
-    private AccountRepository accountRepository;
+    private AccountService accountService;
 
     @Transactional
     @PostMapping("/transactions")
@@ -62,18 +62,18 @@ public class TransactionController {
             return new ResponseEntity<>("El número de cuenta de origen no fue ingresado", HttpStatus.FORBIDDEN);
         }
 
-        Client debitClient = clientRepository.findByEmail(authentication.getName());
+        Client debitClient = clientService.findByEmail(authentication.getName());
         //Client creditClient = accountRepository.findByNumber(toAccountNumber).getOwner();
 
-        if (accountRepository.findByNumber(fromAccountNumber) == null){
+        if (accountService.findByNumber(fromAccountNumber) == null){
             return new ResponseEntity<>("La cuenta de origen ingresada no exite", HttpStatus.FORBIDDEN);
         }
 
-        if (accountRepository.findByNumber(toAccountNumber) == null){
+        if (accountService.findByNumber(toAccountNumber) == null){
             return new ResponseEntity<>("La cuenta de destino ingresada no exite", HttpStatus.FORBIDDEN);
         }
 
-        if (accountRepository.findByNumberAndOwner(fromAccountNumber, debitClient) == null){
+        if (accountService.findByNumberAndOwner(fromAccountNumber, debitClient) == null){
             return new ResponseEntity<>("La cuenta de origen ingresada no pertenece al usuario autenticado", HttpStatus.FORBIDDEN);
         }
 
@@ -81,7 +81,7 @@ public class TransactionController {
             return new ResponseEntity<>("La cuenta de origen y destino coinciden", HttpStatus.FORBIDDEN);
         }
 
-        if(accountRepository.findByNumberAndOwner(fromAccountNumber, debitClient).getBalance() < amount) {
+        if(accountService.findByNumberAndOwner(fromAccountNumber, debitClient).getBalance() < amount) {
             return new ResponseEntity<>("Saldo insuficiente", HttpStatus.FORBIDDEN);
         }
 
@@ -92,19 +92,19 @@ public class TransactionController {
         Transaction debitTransaction = new Transaction(TransactionType.DEBIT, amount, description, LocalDateTime.now());
         Transaction creditTransaction = new Transaction(TransactionType.CREDIT, amount, description, LocalDateTime.now());
 
-        Account debitAccount = accountRepository.findByNumber(fromAccountNumber);
+        Account debitAccount = accountService.findByNumber(fromAccountNumber);
         debitAccount.addTransaction(debitTransaction);
-        transactionRepository.save(debitTransaction);
+        transactionService.save(debitTransaction);
         double debitAccountBalance = debitAccount.getBalance();
         debitAccount.setBalance(debitAccountBalance-amount);
-        //accountRepository.save(debitAccount);
+        accountService.save(debitAccount);
 
-        Account creditAccount = accountRepository.findByNumber(toAccountNumber);
+        Account creditAccount = accountService.findByNumber(toAccountNumber);
         creditAccount.addTransaction(creditTransaction);
-        transactionRepository.save(creditTransaction);
+        transactionService.save(creditTransaction);
         double creditAccountBalance = creditAccount.getBalance();
         creditAccount.setBalance(creditAccountBalance + amount);
-        //accountRepository.save(creditAccount);
+        accountService.save(creditAccount);
 
         return new ResponseEntity<>("La transacción se realizó con exito", HttpStatus.ACCEPTED);
     }

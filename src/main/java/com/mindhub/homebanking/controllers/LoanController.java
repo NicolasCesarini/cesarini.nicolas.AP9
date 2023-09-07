@@ -3,7 +3,7 @@ package com.mindhub.homebanking.controllers;
 import com.mindhub.homebanking.dtos.LoanApplicationDTO;
 import com.mindhub.homebanking.dtos.LoanDTO;
 import com.mindhub.homebanking.models.*;
-import com.mindhub.homebanking.repositories.*;
+import com.mindhub.homebanking.services.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,27 +21,23 @@ import static java.util.stream.Collectors.toList;
 public class LoanController {
 
     @Autowired
-    private LoanRepository loanRepository;
+    private LoanService loanService;
 
     @Autowired
-    private AccountRepository accountRepository;
+    private AccountService accountService;
 
     @Autowired
-    private ClientRepository clientRepository;
+    private ClientService clientService;
 
     @Autowired
-    private ClientLoanRepository clientLoanRepository;
+    private ClientLoanService clientLoanService;
 
     @Autowired
-    private TransactionRepository transactionRepository;
+    private TransactionService transactionService;
 
     @GetMapping("/loans")
     public List<LoanDTO> getLoans() {
-        List<LoanDTO> allLoans = loanRepository.findAll().stream()
-                                                .map(loan -> new LoanDTO(loan))
-                                                .collect(toList());
-
-        return allLoans;
+        return loanService.getLoansDTO();
     }
 
     @Transactional
@@ -68,7 +64,7 @@ public class LoanController {
             return new ResponseEntity<>("El monto soliciado no fue ingresado", HttpStatus.FORBIDDEN);
         }
         //403 forbidden, si la cuenta de destino no existe
-        Account account = accountRepository.findByNumber(loanApplicationDTO.getToAccountNumber());
+        Account account = accountService.findByNumber(loanApplicationDTO.getToAccountNumber());
 
         if (account == null) {
             return new ResponseEntity<>("La cuenta de destino no existe", HttpStatus.FORBIDDEN);
@@ -77,14 +73,14 @@ public class LoanController {
         //403 forbidden, si la cuenta de destino no
         //pertenece al cliente autenticado
 
-        Client client = clientRepository.findByEmail(authentication.getName());
-        if (!accountRepository.existsByNumberAndOwner(account.getNumber(), client)) {
+        Client client = clientService.findByEmail(authentication.getName());
+        if (!accountService.existsByNumberAndOwner(account.getNumber(), client)) {
             return new ResponseEntity<>("La cuenta de destino no pertenece al cliente autenticado",
                                         HttpStatus.FORBIDDEN);
         }
 
         // 403 forbidden, si el préstamo no existe
-        if(!loanRepository.existsById(loanApplicationDTO.getLoanId())) {
+        if(!loanService.existsById(loanApplicationDTO.getLoanId())) {
             return new ResponseEntity<>("El prestamo seleccionado no existe", HttpStatus.FORBIDDEN);
         }
 
@@ -92,7 +88,7 @@ public class LoanController {
         //monto máximo permitido del préstamo
         //solicitado
 
-        Loan loan = loanRepository.findLoanById(loanApplicationDTO.getLoanId());
+        Loan loan = loanService.findById(loanApplicationDTO.getLoanId());
 
         if (loanApplicationDTO.getAmount() > loan.getMaxAmount()) {
             return new ResponseEntity<>("El monto solocitado es mayor al monto disponible para el prestamo de " +
@@ -116,7 +112,7 @@ public class LoanController {
 
         client.addClientLoan(makeLoan);
         loan.addClientLoan(makeLoan);
-        clientLoanRepository.save(makeLoan);
+        clientLoanService.save(makeLoan);
 
         //Se debe crear una transacción “CREDIT” asociada a la cuenta de destino (el monto debe quedar positivo) con la descripción concatenando el nombre del préstamo y la frase “loan approved”
 
@@ -125,7 +121,7 @@ public class LoanController {
                         + " loan approved", LocalDateTime.now());
 
         account.addTransaction(loanTransaction);
-        transactionRepository.save(loanTransaction);
+        transactionService.save(loanTransaction);
 
 
 
@@ -133,7 +129,7 @@ public class LoanController {
 
         double accountBalance = account.getBalance();
         account.setBalance(accountBalance + loanApplicationDTO.getAmount());
-        accountRepository.save(account);
+        accountService.save(account);
 
 
 

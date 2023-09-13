@@ -6,6 +6,7 @@ import com.mindhub.homebanking.models.Account;
 import com.mindhub.homebanking.models.Client;
 import com.mindhub.homebanking.services.AccountService;
 import com.mindhub.homebanking.services.ClientService;
+import com.mindhub.homebanking.utils.AccountUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -52,7 +53,7 @@ public class AccountController {
         return new ResponseEntity<>(new AccountDTO(account), HttpStatus.ACCEPTED);
     }
 
-    @RequestMapping("/clients/current/accounts")
+    @GetMapping("/clients/current/accounts")
     public List<AccountDTO> getCurrentAccounts(Authentication authentication) {
         Client client = clientService.findByEmail(authentication.getName());
         List<AccountDTO> currentClientAccounts = client.getAccounts().stream()
@@ -68,7 +69,7 @@ public class AccountController {
             return new ResponseEntity<>("Ya tienes el máximo de cuentas permitidas", HttpStatus.FORBIDDEN);
         }
 
-        Account account = new Account(getAccountNumber(), LocalDateTime.now(), 0);
+        Account account = new Account(accountService.getNewRandomAccountNumber(), LocalDateTime.now(), 0);
         client.addAccount(account);
         accountService.save(account);
         return new ResponseEntity<>("Cuenta creada", HttpStatus.CREATED);
@@ -76,17 +77,5 @@ public class AccountController {
     }
 
 
-
-    public int getRandomNumber(int min, int max) {
-        return (int) ((Math.random() * (max - min)) + min);
-    }
-
-    public String getAccountNumber(){
-        String numeroCuenta;
-        do {
-            numeroCuenta= "VIN-" + String.format("%08d", getRandomNumber(1, 99999999));
-        } while (accountService.existsByNumber(numeroCuenta));
-        return numeroCuenta;
-    }
 
 }

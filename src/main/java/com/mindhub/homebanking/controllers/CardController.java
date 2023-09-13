@@ -1,7 +1,5 @@
 package com.mindhub.homebanking.controllers;
 
-
-import com.mindhub.homebanking.dtos.AccountDTO;
 import com.mindhub.homebanking.dtos.CardDTO;
 import com.mindhub.homebanking.models.Card;
 import com.mindhub.homebanking.models.CardColor;
@@ -9,14 +7,12 @@ import com.mindhub.homebanking.models.CardType;
 import com.mindhub.homebanking.models.Client;
 import com.mindhub.homebanking.services.CardService;
 import com.mindhub.homebanking.services.ClientService;
+import com.mindhub.homebanking.utils.CardUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -50,7 +46,8 @@ public class CardController {
         }
 
         Card card = new Card(client.getFirstName()+" "+client.getLastName(),
-                cardType, cardColor, getCardNumber(), getCardCvv(), LocalDateTime.now(), LocalDateTime.now().plusYears(5));
+                cardType, cardColor, cardService.getNewRandomCardNumber(), cardService.getNewRandomCardCvv(),
+                LocalDateTime.now(), LocalDateTime.now().plusYears(5));
 
         client.addCard(card);
         cardService.save(card);
@@ -66,24 +63,9 @@ public class CardController {
         return currentClientCards;
     }
 
-    public int getRandomNumber(int min, int max) {
-        return (int) ((Math.random() * (max - min)) + min);
-    }
-
-    public String getCardNumber() {
-        String numberCard;
-        do {
-            numberCard = String.format("%04d", getRandomNumber(1, 9999)) + "-" + String.format("%04d", getRandomNumber(1, 9999)) + "-" + String.format("%04d", getRandomNumber(1, 9999)) + "-" + String.format("%04d", getRandomNumber(1, 9999));
-        } while (cardService.existsCardByNumber(numberCard));
-        return numberCard;
-    }
-
-    public int getCardCvv() {
-        int cardCvv;
-        do {
-            cardCvv = getRandomNumber(100, 999);
-        } while (cardService.existsCardByCvv(cardCvv));
-        return cardCvv;
+    @DeleteMapping("/clients/current/cards")
+    public void deleteCard(@RequestParam Long id) {
+        cardService.deleteById(id);
     }
 
 }

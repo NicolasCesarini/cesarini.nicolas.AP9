@@ -32,4 +32,9 @@ public class LoanServiceImplement implements LoanService {
                 .map(loan -> new LoanDTO(loan))
                 .collect(toList());
     }
+
+    @Override
+    public void save(Loan loan) {
+        loanRepository.save(loan);
+    }
 }

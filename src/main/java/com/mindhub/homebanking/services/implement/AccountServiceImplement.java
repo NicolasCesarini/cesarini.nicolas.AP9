@@ -5,6 +5,7 @@ import com.mindhub.homebanking.models.Account;
 import com.mindhub.homebanking.models.Client;
 import com.mindhub.homebanking.repositories.AccountRepository;
 import com.mindhub.homebanking.services.AccountService;
+import com.mindhub.homebanking.utils.AccountUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -54,4 +55,14 @@ public class AccountServiceImplement implements AccountService {
     public boolean existsByNumberAndOwner(String accountNumber, Client client) {
         return accountRepository.existsByNumberAndOwner(accountNumber, client);
     }
+
+    @Override
+    public String getNewRandomAccountNumber() {
+        String accountNumber;
+        do {
+            accountNumber = "VIN-" + String.format("%08d", AccountUtils.getRandomAccountNumber());
+        } while (existsByNumber(accountNumber));
+        return accountNumber;
+    }
+
 }

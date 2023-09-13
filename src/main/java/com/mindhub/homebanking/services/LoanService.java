@@ -9,4 +9,5 @@ public interface LoanService {
     boolean existsById(Long id);
     Loan findById(Long id);
     List<LoanDTO> getLoansDTO();
+    void save (Loan loan);
 }

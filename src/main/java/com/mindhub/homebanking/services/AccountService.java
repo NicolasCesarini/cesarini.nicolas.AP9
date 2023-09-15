@@ -16,4 +16,5 @@ public interface AccountService {
     Account findByNumberAndOwner(String accountNumber, Client client);
     boolean existsByNumberAndOwner(String accountNumber, Client client);
     String getNewRandomAccountNumber();
+    void deleteById (Long id);
 }

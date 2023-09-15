@@ -65,4 +65,9 @@ public class AccountServiceImplement implements AccountService {
         return accountNumber;
     }
 
+    @Override
+    public void deleteById(Long id) {
+        accountRepository.deleteById(id);
+    }
+
 }

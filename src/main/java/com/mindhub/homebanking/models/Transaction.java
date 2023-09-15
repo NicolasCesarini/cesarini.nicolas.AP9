@@ -16,7 +16,7 @@ public class Transaction {
     private double amount;
     private String description;
     private LocalDateTime date;
-
+    private double accountBalance;
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="usedAccount_id")
     private Account usedAccount;
@@ -51,6 +51,8 @@ public class Transaction {
         return date;
     }
 
+    public double getAccountBalance() { return accountBalance; }
+
     public Account getUsedAccount() {
         return usedAccount;
     }
@@ -70,6 +72,8 @@ public class Transaction {
     public void setDate(LocalDateTime date) {
         this.date = date;
     }
+
+    public void setAccountBalance(double accountBalance) { this.accountBalance = accountBalance; }
 
     public void setUsedAccount(Account usedAccount) {
         this.usedAccount = usedAccount;

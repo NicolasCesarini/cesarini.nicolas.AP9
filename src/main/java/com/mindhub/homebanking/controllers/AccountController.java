@@ -4,8 +4,12 @@ import com.mindhub.homebanking.dtos.AccountDTO;
 import com.mindhub.homebanking.dtos.ClientDTO;
 import com.mindhub.homebanking.models.Account;
 import com.mindhub.homebanking.models.Client;
+import com.mindhub.homebanking.models.Transaction;
+import com.mindhub.homebanking.repositories.AccountRepository;
+import com.mindhub.homebanking.repositories.TransactionRepository;
 import com.mindhub.homebanking.services.AccountService;
 import com.mindhub.homebanking.services.ClientService;
+import com.mindhub.homebanking.services.TransactionService;
 import com.mindhub.homebanking.utils.AccountUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,11 +35,13 @@ public class AccountController {
     @Autowired
     private ClientService clientService;
 
+    @Autowired
+    private TransactionService transactionService;
+
     @GetMapping("/accounts")
     public List<AccountDTO> GetAccounts(){
         return accountService.GetAccountsDTO();
     }
-
 
     /*
     @GetMapping("/accounts/{id}")
@@ -74,6 +80,22 @@ public class AccountController {
         accountService.save(account);
         return new ResponseEntity<>("Cuenta creada", HttpStatus.CREATED);
 
+    }
+
+    @DeleteMapping("/clients/current/account/delete/{id}")
+    public ResponseEntity<Object> deleteAccount(Authentication authentication, @PathVariable Long id) {
+        Client client = clientService.findByEmail(authentication.getName());
+        Account account = accountService.findByIdAndOwner(id, client);
+
+        if (account != null){
+            List<Transaction> transactions = transactionService.findAllByUsedAccount(account);
+            transactionService.deleteAll(transactions);
+            accountService.deleteById(id);
+            //Set<Transaction> transactions = account.getTransactions();
+            //eliminar TODAS las transacciones
+            return new ResponseEntity<>("200, Delete Account",HttpStatus.ACCEPTED);
+        }
+        return new ResponseEntity<>("403, Not delete account",HttpStatus.FORBIDDEN);
     }
 
 

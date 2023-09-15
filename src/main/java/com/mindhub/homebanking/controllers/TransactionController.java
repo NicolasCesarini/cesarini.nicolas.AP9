@@ -93,17 +93,16 @@ public class TransactionController {
         Transaction creditTransaction = new Transaction(TransactionType.CREDIT, amount, description, LocalDateTime.now());
 
         Account debitAccount = accountService.findByNumber(fromAccountNumber);
+        debitAccount.setBalance(debitAccount.getBalance()-amount);
+        debitTransaction.setAccountBalance(debitAccount.getBalance());
         debitAccount.addTransaction(debitTransaction);
         transactionService.save(debitTransaction);
-        double debitAccountBalance = debitAccount.getBalance();
-        debitAccount.setBalance(debitAccountBalance-amount);
-        accountService.save(debitAccount);
 
         Account creditAccount = accountService.findByNumber(toAccountNumber);
+        creditAccount.setBalance(creditAccount.getBalance() + amount);
+        creditTransaction.setAccountBalance(creditAccount.getBalance());
         creditAccount.addTransaction(creditTransaction);
         transactionService.save(creditTransaction);
-        double creditAccountBalance = creditAccount.getBalance();
-        creditAccount.setBalance(creditAccountBalance + amount);
         accountService.save(creditAccount);
 
         return new ResponseEntity<>("La transacción se realizó con exito", HttpStatus.ACCEPTED);

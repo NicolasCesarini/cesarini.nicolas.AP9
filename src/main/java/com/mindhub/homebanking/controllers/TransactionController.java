@@ -89,7 +89,7 @@ public class TransactionController {
             return new ResponseEntity<>("El monto de la transferencia debe ser mayor a 0", HttpStatus.FORBIDDEN);
         }
 
-        Transaction debitTransaction = new Transaction(TransactionType.DEBIT, amount, description, LocalDateTime.now());
+        Transaction debitTransaction = new Transaction(TransactionType.DEBIT, - amount, description, LocalDateTime.now());
         Transaction creditTransaction = new Transaction(TransactionType.CREDIT, amount, description, LocalDateTime.now());
 
         Account debitAccount = accountService.findByNumber(fromAccountNumber);

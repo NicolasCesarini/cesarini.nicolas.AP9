@@ -59,13 +59,13 @@ public class HomebankingApplication {
 			accountService.save(account3);
 			accountService.save(account4);
 
-			Transaction transaction1 = new Transaction(TransactionType.DEBIT,1500,"Débito",today);
+			Transaction transaction1 = new Transaction(TransactionType.DEBIT,-1500,"Débito",today);
 			Transaction transaction2 = new Transaction(TransactionType.CREDIT,2000,"Crédito",today);
-			Transaction transaction3 = new Transaction(TransactionType.DEBIT,2500,"Débito",today);
+			Transaction transaction3 = new Transaction(TransactionType.DEBIT,-2500,"Débito",today);
 			Transaction transaction4 = new Transaction(TransactionType.CREDIT,1000,"Crédito",today);
-			Transaction transaction5 = new Transaction(TransactionType.DEBIT,1500,"Débito",today);
+			Transaction transaction5 = new Transaction(TransactionType.DEBIT,-1500,"Débito",today);
 			Transaction transaction6 = new Transaction(TransactionType.CREDIT,2000,"Crédito",today);
-			Transaction transaction7 = new Transaction(TransactionType.DEBIT,2500,"Débito",today);
+			Transaction transaction7 = new Transaction(TransactionType.DEBIT,-2500,"Débito",today);
 			Transaction transaction8 = new Transaction(TransactionType.CREDIT,1000,"Crédito",today);
 
 			account1.addTransaction(transaction1);
